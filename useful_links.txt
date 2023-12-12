@@ -1,0 +1,7 @@
+Links:
+
+- http://falseelectronics.blogspot.com/2019/03/korg-ms20-mini.html
+
+- https://www.eddybergman.com/2020/03/synthesizer-build-part-22-ring.html
+
+- https://wiki.analog.com/university/courses/electronics/electronics_lab_diode_ring_modulator
