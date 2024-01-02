@@ -11,13 +11,13 @@ uint8_t chipSelect;
 SPISettings _spiSettings;
 
 void _beginTransmission() {
-  digitalWrite(pinLDAC, 1);
+  SPI.beginTransaction(_spiSettings);
+  digitalWrite(pinLDAC, 0);
   if(!chipSelect) {
     digitalWrite(pinChipSelect_1, 0);
   } else {
     digitalWrite(pinChipSelect_2, 0);
   }
-  SPI.beginTransaction(_spiSettings);
 }
 
 void _endTransmission() {
@@ -26,8 +26,20 @@ void _endTransmission() {
   } else {
     digitalWrite(pinChipSelect_2, 1);
   }
+  digitalWrite(pinLDAC, 1);
   SPI.endTransaction();
-  digitalWrite(pinLDAC, 0);
+}
+
+void mcp16bitOut(int value) {
+  chipSelect = 0;
+  uint8_t odd = 0;
+  byte firstByte = (value & 0xFF00) >> 8;
+  byte secondByte = value & 0xFF;
+
+  _beginTransmission();
+  SPI.transfer(firstByte);
+  SPI.transfer(secondByte);
+  _endTransmission();
 }
 
 void mcpAnalogOut(int value, int selector) {
@@ -50,10 +62,9 @@ void mcpAnalogOut(int value, int selector) {
   byte firstByte = configBits << 4 | (value & 0xF00) >> 8;
   byte secondByte = value & 0xFF;
 
-  uint16_t fullWord = firstByte << 8 | secondByte;
-
   _beginTransmission();
-  SPI.transfer16(fullWord);
+  SPI.transfer(firstByte);
+  SPI.transfer(secondByte);
   _endTransmission();
 }
 
@@ -69,16 +80,16 @@ void setup() {
   digitalWrite(pinChipSelect_2, 1);
   digitalWrite(pinLDAC, 1);
 
-  _spiSettings = SPISettings(20000, MSBFIRST, SPI_MODE0);
+  _spiSettings = SPISettings(2000, MSBFIRST, SPI_MODE0);
 
   SPI.begin();
 }
 
 void loop() {
-  for(int i = 0; i < 4096; i++) {
-    mcpAnalogOut(i, 3);
-    delayMicroseconds(100);
-  }
+//  for(int i = 0; i < 65536; i++) {
+    mcpAnalogOut(4095, 2);
+    delayMicroseconds(10000);
+//  }
 /*  mcpAnalogOut(0, 0);
   delayMicroseconds(100);
   for(int i = 0; i < 4096; i++) {
